@@ -55,9 +55,9 @@ void ansi_control(char *format_string, char cmd){
 				apply_color(parse_ansi(format_string,back));
 				format_string = back+1;
 			}
-			if (format_string<back){
-				apply_color(parse_ansi(format_string,back));
-			}
+		}
+		if (format_string<back){
+			apply_color(parse_ansi(format_string,back));
 		}
 	}
 	return;
