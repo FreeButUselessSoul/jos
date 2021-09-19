@@ -172,8 +172,7 @@ cga_putc(int c)
 	// if no attribute given, then use black on white
 	// if (!(c & ~0xFF))
 		// c |= 0x0700;
-	c = (((c&0xff)|fg_color<<8)|bg_color<<12);
-	crt_buf[crt_pos++]=('0'+(c>>8))|0x0700;
+	// c = (((c&0xff)|fg_color<<8)|bg_color<<12);
 
 	switch (c & 0xff) {
 	case '\b':
