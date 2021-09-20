@@ -126,15 +126,9 @@ monitor(struct Trapframe *tf)
 	char *buf;
 
 	cprintf("Welcome to the \x1B[36mJOS kernel monitor\x1B[38m!\n");
-<<<<<<< HEAD
 	// cprintf("COLOR TEST\n");
 	// cprintf("\x1B[31;42mRED\x1B[32;43mGREEN\x1B[33;44mYELLOW\x1B[34;45mBLUE\n");
 	// cprintf("\x1B[35;46mMAGENTA\x1B[36;47mCYAN\x1B[30;41mBLACK\x1B[37;40mWHITE\n");
-=======
-	cprintf("COLOR TEST\n");
-	cprintf("\x1B[31;42mRED\x1B[32;43mGREEN\x1B[33;44mYELLOW\x1B[34;45mBLUE\n");
-	cprintf("\x1B[35;46mMAGENTA\x1B[36;47mCYAN\x1B[30;41mBLACK\x1B[37;40mWHITE\n");
->>>>>>> gitos/master
 	cprintf("Type 'help' for a list of commands.\n");
 
 
