@@ -24,6 +24,7 @@ struct Command {
 static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
+	{ "tracestk", "Display information about the stack", mon_backtrace},
 };
 
 /***** Implementations of basic kernel monitor commands *****/
@@ -57,7 +58,19 @@ mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
-	// Your code here.
+	uint32_t *ebp;
+	struct Eipdebuginfo info;
+	ebp=(uint32_t*)read_ebp();
+	cprintf("Stack backtrace:\n");
+	while (ebp){
+		cprintf("  ebp  %08x  eip  %08x  args  %08x  %08x  %08x  %08x  %08x\n",
+		ebp,ebp[1],ebp[2],ebp[3],ebp[4],ebp[5],ebp[6]);
+		if(debuginfo_eip(ebp[1],&info)==0){
+			cprintf("\t%s:%d: %.*s+%u\r\n", info.eip_file, info.eip_line, info.eip_fn_namelen, info.eip_fn_name, ebp[1] - info.eip_fn_addr);
+        }
+		else cprintf("\tUnkown position\n");
+		ebp = (uint32_t*)*ebp;
+	}
 	return 0;
 }
 
@@ -112,8 +125,10 @@ monitor(struct Trapframe *tf)
 {
 	char *buf;
 
-	cprintf("Welcome to the JOS kernel monitor!\n");
-	cprintf(">>\x1B[31;42mHELLO WORLD!\n");
+	cprintf("Welcome to the \x1B[36mJOS kernel monitor\x1B[38m!\n");
+	// cprintf("COLOR TEST\n");
+	// cprintf("\x1B[31;42mRED\x1B[32;43mGREEN\x1B[33;44mYELLOW\x1B[34;45mBLUE\n");
+	// cprintf("\x1B[35;46mMAGENTA\x1B[36;47mCYAN\x1B[30;41mBLACK\x1B[37;40mWHITE\n");
 	cprintf("Type 'help' for a list of commands.\n");
 
 

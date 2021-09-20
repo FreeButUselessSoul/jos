@@ -23,8 +23,19 @@ int parse_ansi(char* start, char* end) {
 	return res;
 }
 void apply_color(int ansi_color) {
-	if (ansi_color>=30 && ansi_color<40) fg_color = ansi2cga[ansi_color-30];
-	else if (ansi_color>=40 && ansi_color<50) bg_color = ansi2cga[ansi_color-40];
+	switch ((ansi_color)/10){
+		case 3://30-37
+			if (ansi_color<=37)
+				fg_color = ansi2cga[ansi_color-30];
+			else fg_color=7; //reset to default
+			break;
+		case 4:
+			if (ansi_color<=47)
+				bg_color = ansi2cga[ansi_color-40];
+			else bg_color=0;
+			break;
+		default:break; //hold the setting
+	}
 }
 void ansi_control(char *format_string, char cmd){
 	char *back = format_string;
@@ -57,7 +68,7 @@ putch(int ch, int *cnt)
 			else{
 				cputchar('\033');cputchar(ch);
 			}
-			// break;
+			break;
 		case escaping:
 			if(ischar(ch)){
 				ansi_fmt[ansi_fmt_ptr]=0;
