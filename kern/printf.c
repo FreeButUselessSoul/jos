@@ -27,32 +27,14 @@ void apply_color(int ansi_color) {
 		case 3://30-37
 			if (ansi_color<=37)
 				fg_color = ansi2cga[ansi_color-30];
-<<<<<<< HEAD
 			else fg_color=7; //reset to default
-=======
-			else fg_color=7;
->>>>>>> gitos/master
 			break;
 		case 4:
 			if (ansi_color<=47)
 				bg_color = ansi2cga[ansi_color-40];
 			else bg_color=0;
 			break;
-<<<<<<< HEAD
 		default:break; //hold the setting
-=======
-		case 9:
-			if(ansi_color<=97)
-				fg_color = ansi2cga[8|(ansi_color-90)];
-			else fg_color=7;
-			break;
-		case 10:
-			if(ansi_color<=107)
-				bg_color = ansi2cga[8|(ansi_color-100)];
-			else bg_color=0;
-			break;
-		default:break;
->>>>>>> gitos/master
 	}
 }
 void ansi_control(char *format_string, char cmd){
