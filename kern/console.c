@@ -128,7 +128,8 @@ lpt_putc(int c)
 static unsigned addr_6845;
 static uint16_t *crt_buf;
 static uint16_t crt_pos;
-extern uint16_t fg_color,bg_color;
+extern uint16_t fg_color;
+extern uint16_t bg_color;
 extern ansi_state state;
 extern char ansi_fmt[100];
 extern uint16_t ansi_fmt_ptr;
@@ -167,7 +168,7 @@ cga_init(void)
 
 
 static void
-cga_putc(int c)
+cga_putc(uint16_t c)
 {
 	// if no attribute given, then use black on white
 	// if (!(c & ~0xFF))
