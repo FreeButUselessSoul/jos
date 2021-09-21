@@ -128,6 +128,11 @@ lpt_putc(int c)
 static unsigned addr_6845;
 static uint16_t *crt_buf;
 static uint16_t crt_pos;
+extern uint16_t fg_color;
+extern uint16_t bg_color;
+extern ansi_state state;
+extern char ansi_fmt[100];
+extern uint16_t ansi_fmt_ptr;
 
 static void
 cga_init(void)
@@ -155,16 +160,20 @@ cga_init(void)
 
 	crt_buf = (uint16_t*) cp;
 	crt_pos = pos;
+	fg_color = 7;
+	bg_color = 0;
+	state=normal;
+	ansi_fmt_ptr=0;
 }
 
 
-
 static void
-cga_putc(int c)
+cga_putc(uint16_t c)
 {
 	// if no attribute given, then use black on white
-	if (!(c & ~0xFF))
-		c |= 0x0700;
+	// if (!(c & ~0xFF))
+		// c |= 0x0700;
+	c = (((c&0xff)|fg_color<<8)|bg_color<<12);
 
 	switch (c & 0xff) {
 	case '\b':

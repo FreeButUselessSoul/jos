@@ -150,6 +150,7 @@ QEMUOPTS += $(QEMUEXTRA)
 
 gdb:
 	$(GDB) -n -x .gdbinit
+	gdb -n -x .gdbinit
 
 pre-qemu: .gdbinit
 

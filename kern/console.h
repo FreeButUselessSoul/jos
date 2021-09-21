@@ -23,4 +23,6 @@ int cons_getc(void);
 void kbd_intr(void); // irq 1
 void serial_intr(void); // irq 4
 
+typedef enum {normal,start,escaping,overflow} ansi_state;
+
 #endif /* _CONSOLE_H_ */
