@@ -17,6 +17,8 @@ static size_t npages_basemem;	// Amount of base memory (in pages)
 pde_t *kern_pgdir;		// Kernel's initial page directory
 struct PageInfo *pages;		// Physical page state array
 static struct PageInfo *page_free_list;	// Free list of physical pages
+#define PSE_REG(arg) __asm__ __volatile__ ("movl $1,%%eax\n\tCPUID\n\tmovl $8,%%edi\n\tandl %%edi,%%edx\n\t":"=d" (arg) );
+// Check whether large page is supported
 
 
 // --------------------------------------------------------------
@@ -197,9 +199,19 @@ mem_init(void)
 	// we just set up the mapping anyway.
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
-	boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W);
-	// Check that the initial page directory has been set up correctly.
-	check_kern_pgdir();
+	int pse;
+	PSE_REG(pse);
+	// cprintf("PSE:%d\n",pse);
+	if (pse==8) {
+		boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W|PTE_P|PTE_PS);
+		check_kern_pgdir();
+		lcr4 (rcr4 () | CR4_PSE); // page size extension ON!
+	}
+	else { //
+		boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W|PTE_P);
+		// Check that the initial page directory has been set up correctly.
+		check_kern_pgdir();
+	}
 
 	// Switch from the minimal entry page directory to the full kern_pgdir
 	// page table we just created.	Our instruction pointer should be
@@ -359,6 +371,7 @@ pte_t *
 pgdir_walk(pde_t *pgdir, const void *va, int create)
 {
 	pde_t *pgdir_entry = pgdir + PDX(va);
+	if (*pgdir_entry & PTE_PS) return pgdir_entry;
     if (!(*pgdir_entry & PTE_P)) {
         if (!create)
             return NULL;
@@ -388,11 +401,21 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 static void
 boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
 {
-	size_t offset;
-    pte_t *pgtable_entry;
-    for (offset = 0; offset < size; offset += PGSIZE, va += PGSIZE, pa += PGSIZE) {
-        pgtable_entry = pgdir_walk(pgdir, (void *)va, 1);
-        *pgtable_entry = (pa | perm | PTE_P);
+	if ((perm & PTE_PS)) { // large page mode
+		size_t offset;
+		pde_t *pgdir_entry;
+		for (offset = 0; offset < size; offset += PTSIZE, va += PTSIZE, pa += PTSIZE) {
+			pgdir_entry = (pde_t *)(pgdir + PDX(va));
+			*pgdir_entry |= pa | perm | PTE_P;
+		}
+	}
+	else { // normal mode
+		size_t offset;
+		pte_t *pgtable_entry;
+		for (offset = 0; offset < size; offset += PGSIZE, va += PGSIZE, pa += PGSIZE) {
+			pgtable_entry = pgdir_walk(pgdir, (void *)va, 1);
+			*pgtable_entry = pa | perm | PTE_P;
+		}
 	}
 }
 
@@ -705,7 +728,9 @@ check_va2pa(pde_t *pgdir, uintptr_t va)
 	pgdir = &pgdir[PDX(va)];
 	if (!(*pgdir & PTE_P))
 		return ~0;
-	p = (pte_t*) KADDR(PTE_ADDR(*pgdir));
+	if (*pgdir & PTE_PS)
+		return LPTE_ADDR(*pgdir)|LPGOFF(va);//large page
+	p = (pte_t*) KADDR(PTE_ADDR(*pgdir));//normal page
 	if (!(p[PTX(va)] & PTE_P))
 		return ~0;
 	return PTE_ADDR(p[PTX(va)]);

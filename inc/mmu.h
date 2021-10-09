@@ -54,6 +54,10 @@
 #define PTXSHIFT	12		// offset of PTX in a linear address
 #define PDXSHIFT	22		// offset of PDX in a linear address
 
+#define LPGSIZE 	4194304 	// size of a large page
+#define LPGOFF(la)	(((uintptr_t) (la))&0x3FFFFF)
+#define LPTE_ADDR(lpte)	((physaddr_t)(lpte) & 0xFFC00000)
+
 // Page table/directory entry flags.
 #define PTE_P		0x001	// Present
 #define PTE_W		0x002	// Writeable
