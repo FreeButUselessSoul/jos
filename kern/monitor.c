@@ -11,6 +11,7 @@
 #include <kern/monitor.h>
 #include <kern/kdebug.h>
 #include <kern/trap.h>
+#include <kern/env.h>
 
 #define CMDBUF_SIZE	80	// enough for one VGA text line
 
@@ -26,8 +27,8 @@ static struct Command commands[] = {
 	{ "help", "Display this list of commands", mon_help },
 	{ "kerninfo", "Display information about the kernel", mon_kerninfo },
 	{ "backtrace", "Display information about the stack", mon_backtrace},
-	{ "showmappings", "Display physical page mappings and corresponding permission bits",showmappings},
-	{ "setm","Set or clear the permission bits in a particular page",setm},
+	{ "showmappings", "Display physical page mappings and corresponding permission bits", showmappings},
+	{ "setm","Set or clear the permission bits in a particular page", setm},
 };
 
 /***** Implementations of basic kernel monitor commands *****/

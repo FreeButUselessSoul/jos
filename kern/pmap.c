@@ -212,19 +212,9 @@ mem_init(void)
 	// we just set up the mapping anyway.
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
-	int pse;
-	PSE_REG(pse);
-	// cprintf("PSE:%d\n",pse);
-	if (pse==8) {
-		boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W|PTE_P|PTE_PS);
-		check_kern_pgdir();
-		lcr4 (rcr4 () | CR4_PSE); // page size extension ON!
-	}
-	else { //
-		boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W|PTE_P);
-		// Check that the initial page directory has been set up correctly.
-		check_kern_pgdir();
-	}
+	boot_map_region(kern_pgdir, KERNBASE, -KERNBASE, 0, PTE_W|PTE_P);
+	// Check that the initial page directory has been set up correctly.
+	check_kern_pgdir();
 
 	// Switch from the minimal entry page directory to the full kern_pgdir
 	// page table we just created.	Our instruction pointer should be
@@ -556,9 +546,21 @@ static uintptr_t user_mem_check_addr;
 int
 user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 {
-	// LAB 3: Your code here.
-
-	return 0;
+	uint32_t start = (uint32_t)ROUNDDOWN(va, PGSIZE);
+    uint32_t end = (uint32_t)ROUNDUP(va + len, PGSIZE);
+    pte_t *page;
+    while (start < end) {
+        page = pgdir_walk(env->env_pgdir, (void *)start, 0);
+        if (!page || start > ULIM || ((uint32_t)(*page) & perm) != perm ) {
+            if (start <= (uint32_t)va)
+                user_mem_check_addr = (uintptr_t)va;
+            else
+                user_mem_check_addr = (uintptr_t)start;
+            return -E_FAULT;
+        }
+		start += PGSIZE;
+    }
+    return 0;
 }
 
 //
