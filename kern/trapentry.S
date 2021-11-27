@@ -79,6 +79,15 @@ funs:
 	placeholder()
 	TRAPHANDLER_NOEC(th16, 16)
 	TRAPHANDLER_NOEC(thsyscall,T_SYSCALL)
+/**
+ * Lab 4: Handlers for interrupts
+ */
+	TRAPHANDLER_NOEC(handler_timer, IRQ_OFFSET + IRQ_TIMER)
+	TRAPHANDLER_NOEC(handler_kbd, IRQ_OFFSET + IRQ_KBD)
+	TRAPHANDLER_NOEC(handler_serial, IRQ_OFFSET + IRQ_SERIAL)
+	TRAPHANDLER_NOEC(handler_spurious, IRQ_OFFSET + IRQ_SPURIOUS)
+	TRAPHANDLER_NOEC(handler_ide, IRQ_OFFSET + IRQ_IDE)
+	TRAPHANDLER_NOEC(handler_error, IRQ_OFFSET + IRQ_ERROR)
 /*
  * Lab 3: Your code here for generating entry points for the different traps.
  */

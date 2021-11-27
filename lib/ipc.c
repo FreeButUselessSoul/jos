@@ -23,7 +23,20 @@ int32_t
 ipc_recv(envid_t *from_env_store, void *pg, int *perm_store)
 {
 	// LAB 4: Your code here.
-	panic("ipc_recv not implemented");
+	if (!pg) pg = (void*) UTOP; // no page sharing
+	int res;
+	if ((res = sys_ipc_recv(pg)) < 0){
+		if (from_env_store)
+			*from_env_store = 0;
+		if (perm_store)
+			*perm_store = 0;
+		return res;
+	}
+	if (from_env_store)
+		*from_env_store = thisenv->env_ipc_from;
+	if (perm_store)
+		*perm_store = thisenv->env_ipc_perm;
+	return thisenv->env_ipc_value;
 	return 0;
 }
 
@@ -39,7 +52,14 @@ void
 ipc_send(envid_t to_env, uint32_t val, void *pg, int perm)
 {
 	// LAB 4: Your code here.
-	panic("ipc_send not implemented");
+	if (!pg) pg = (void *)UTOP;
+	int res;
+	while(1){
+		res = sys_ipc_try_send(to_env, val, pg, perm);
+		if (!res) return;
+		if (res != -E_IPC_NOT_RECV) panic("ipc_send: not receving");
+		sys_yield();
+	}
 }
 
 // Find the first environment of the given type.  We'll use this to
